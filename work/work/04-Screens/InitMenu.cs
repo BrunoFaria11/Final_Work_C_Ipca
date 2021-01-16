@@ -31,7 +31,7 @@ namespace work.Screens
                 }
             }
         }
-        public static void Menu(Employee sessionUser)
+        public static void MenuGerente(Employee sessionUser)
         {
             int response = -1;
        
@@ -43,6 +43,7 @@ namespace work.Screens
 
                 Console.WriteLine("#######################################################################");
                 Console.WriteLine("#  1 - Funcionarios                                                   #");
+                Console.WriteLine("#  1 - Fatuara                                                        #");
                 Console.WriteLine("#  0 - Sair                                                           #");
                 Console.WriteLine("#######################################################################");
 
@@ -68,5 +69,82 @@ namespace work.Screens
                 }
             }
         }
+        public static void MenuCaixa(Employee sessionUser)
+        {
+            int response = -1;
+
+            while (response != 0)
+            {
+                Console.Clear();
+
+                Console.WriteLine("------------------------------   Menu   -------------------------------");
+
+                Console.WriteLine("#######################################################################");
+                Console.WriteLine("#  1 - Venda                                                          #");
+                Console.WriteLine("#  2 - Fatuara                                                        #");
+                Console.WriteLine("#  0 - Sair                                                           #");
+                Console.WriteLine("#######################################################################");
+
+                Console.WriteLine("Insira uma opção");
+                response = Convert.ToInt32(Console.ReadLine());
+                switch (response)
+                {
+                    case 1:
+                        MenuEmployee.Menu(sessionUser);
+                        break;
+                    case 2:
+                        ScnLogin.Login();
+                        break;
+                    case 3:
+                        ScnLogin.Login();
+                        break;
+                    case 4:
+                        ScnLogin.Login();
+                        break;
+                    default:
+                        Console.Clear();
+                        break;
+                }
+            }
+        }
+        public static void MenuRepositor(Employee sessionUser)
+        {
+            int response = -1;
+
+            while (response != 0)
+            {
+                Console.Clear();
+
+                Console.WriteLine("------------------------------   Menu   -------------------------------");
+
+                Console.WriteLine("#######################################################################");
+                Console.WriteLine("#  1 - Funcionarios                                                   #");
+                Console.WriteLine("#  1 - Fatuara                                                        #");
+                Console.WriteLine("#  0 - Sair                                                           #");
+                Console.WriteLine("#######################################################################");
+
+                Console.WriteLine("Insira uma opção");
+                response = Convert.ToInt32(Console.ReadLine());
+                switch (response)
+                {
+                    case 1:
+                        MenuEmployee.Menu(sessionUser);
+                        break;
+                    case 2:
+                        ScnLogin.Login();
+                        break;
+                    case 3:
+                        ScnLogin.Login();
+                        break;
+                    case 4:
+                        ScnLogin.Login();
+                        break;
+                    default:
+                        Console.Clear();
+                        break;
+                }
+            }
+        }
+
     }
 }

@@ -34,7 +34,18 @@ namespace work.Screens
                     if (sessionUser != null)
                     {
                         response = 0;
-                        InitMenu.Menu(sessionUser);
+                        if(sessionUser.type == Enums.EnumTypeEmployee.Gerente)
+                        {
+                            InitMenu.MenuGerente(sessionUser);
+                        }
+                        else if (sessionUser.type == Enums.EnumTypeEmployee.Caixa)
+                        {
+                            InitMenu.MenuCaixa(sessionUser);
+                        }
+                        if (sessionUser.type == Enums.EnumTypeEmployee.Repositor)
+                        {
+                            InitMenu.MenuRepositor(sessionUser);
+                        }
                     }
                     else
                     {

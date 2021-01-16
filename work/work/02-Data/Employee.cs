@@ -7,25 +7,33 @@ using work.Data;
 
 namespace work.Data
 {
-    class Employee : DataEmployee
+    class Employee : Log 
     {
         #region Properties
         public long id { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string address { get; set; }
+        public long contact { get; set; }
+        public DateTime birthDate { get; set; }
+        public DateTime initWork { get; set; }
+        public decimal salary { get; set; }
         public string email { get; set; }
         public string authHash { get; set; }
-        public DateTime? lastDateLogin { get; set; }
+        public DateTime lastDateLogin { get; set; }
         public EnumTypeEmployee type { get; set; }
+  
         #endregion
 
         #region  Constructor
-        public Employee(string email, int type, string firstName, string lastName, string address, long contact, DateTime birthDate, DateTime initWork, decimal salary, string passWord, long userId )
+        public Employee(string email, EnumTypeEmployee type, string firstName, string lastName, string address, long contact, DateTime birthDate, DateTime initWork, decimal salary, string passWord, long userId )
         {
 
             this.id = generateId();
             this.email = email;
             this.authHash = GetHash(passWord);
             this.lastDateLogin = lastDateLogin;
-            this.type = (EnumTypeEmployee)type;
+            this.type = type;
             this.firstName = firstName;
             this.lastName = lastName;
             this.address = address;
@@ -37,13 +45,13 @@ namespace work.Data
             this.AddedBy = userId;
         }
 
-        public Employee(long id,string email, string authHash, DateTime lastDateLogin, int type, string firstName, string lastName, string address, long contact,DateTime birthDate, DateTime initWork, decimal salary, DateTime Added, long AddedBy, DateTime Updated, long UpdatedBy)
+        public Employee(long id,string email, string authHash, DateTime lastDateLogin, EnumTypeEmployee type, string firstName, string lastName, string address, long contact,DateTime birthDate, DateTime initWork, decimal salary, DateTime Added, long AddedBy, DateTime Updated, long UpdatedBy)
         {
             this.id = id;
             this.email = email;
             this.authHash = authHash;
             this.lastDateLogin = lastDateLogin;
-            this.type = (EnumTypeEmployee)type;
+            this.type = type;
             this.firstName = firstName;
             this.lastName = lastName;
             this.address = address;

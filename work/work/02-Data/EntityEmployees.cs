@@ -1,4 +1,7 @@
-﻿using SpreadsheetLight;
+﻿using Nancy.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -6,31 +9,32 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using work.Enums;
 
 namespace work.Data
 {
     class EntityEmployees
     {
         #region Properties
-        public List<Employee> listUsers;
+        public List<Employee> listEmployees;
         public string Path = Directory.GetCurrentDirectory() + ConfigurationManager.AppSettings["EmployeesPath"];
         #endregion
 
         #region  Constructor
         public EntityEmployees()
         {
-            this.listUsers = new List<Employee>();
+            this.listEmployees = new List<Employee>();
         }
         #endregion
 
         #region Methods
         public override string ToString()
         {
-            string result = "   EMAIL    |    TIPO DE FUNCIONARIO    |    PRIMEIRO NOME    |    ULTIMO NOME    |    CONTACTO    |    MORADA    |     DATA DE NASCIMENTO   " + "\n";
+            string result = "   EMAIL   |   TIPO DE FUNCIONARIO   |   PRIMEIRO NOME   |   ULTIMO NOME   |   CONTACTO   |   MORADA   |    DATA DE NASCIMENTO   " + "\n";
 
-            foreach (var item in this.listUsers)
+            foreach (var item in this.listEmployees)
             {
-                result += item.email + "  |   " + EnumHelper<Enums.EnumTypeEmployee>.GetDisplayValue(item.type) + "  |   " + item.firstName + "  |   " + item.lastName + "  |   " + item.contact + "  |   " + item.address + "  |   " + item.birthDate + "\n";
+                result += item.email + " |  " + EnumHelper<Enums.EnumTypeEmployee>.GetDisplayValue(item.type) + " |  " + item.firstName + " |  " + item.lastName + " |  " + item.contact + " |  " + item.address + " |  " + item.birthDate + "\n";
             }
 
             return result;
@@ -52,7 +56,7 @@ namespace work.Data
         {
             try
             {
-                this.listUsers.Clear();
+                this.listEmployees.Clear();
                 using (TextWriter tw = new StreamWriter(Path))
                 {
                     tw.WriteLine("");
@@ -70,58 +74,48 @@ namespace work.Data
         {
             try
             {
-                this.listUsers.Clear();
+                this.listEmployees.Clear();
 
-                SLDocument sl = new SLDocument();
-                FileStream fs = new FileStream(Path, FileMode.Open);
-
-                SLDocument styleSheet2 = new SLDocument(fs);
-
-                SLWorksheetStatistics stats2 = styleSheet2.GetWorksheetStatistics();
-                for (int j = 2; j <= stats2.EndRowIndex; j++)
+                using (StreamReader streamReader = new StreamReader(Path))
                 {
-                    var id = styleSheet2.GetCellValueAsInt64(j, 1);
-                    var email = styleSheet2.GetCellValueAsString(j, 2);
-                    var authHash = styleSheet2.GetCellValueAsString(j, 3);
-                    var lastDateLogin = styleSheet2.GetCellValueAsDateTime(j, 4);
-                    var type = styleSheet2.GetCellValueAsInt32(j, 5);
-                    var firstName = styleSheet2.GetCellValueAsString(j, 6);
-                    var lastName = styleSheet2.GetCellValueAsString(j, 7);
-                    var address = styleSheet2.GetCellValueAsString(j, 8);
+                    while (!streamReader.EndOfStream)
+                    {
+                        string lineTXT = streamReader.ReadLine();
+                        long id = Convert.ToInt64(lineTXT.Split("|")[0]);
+                        string firstName = lineTXT.Split("|")[1];
+                        string lastName = lineTXT.Split("|")[2];
+                        string address = lineTXT.Split("|")[3];
+                        long contact = Convert.ToInt64(lineTXT.Split("|")[4]);
+                        DateTime birthDate = Convert.ToDateTime(lineTXT.Split("|")[5]);
+                        DateTime initWork = Convert.ToDateTime(lineTXT.Split("|")[6]);
+                        decimal salary = Convert.ToDecimal(lineTXT.Split("|")[7]);
+                        string email = lineTXT.Split("|")[8];
+                        string authHash = lineTXT.Split("|")[9];
+                        DateTime lastDateLogin = Convert.ToDateTime(lineTXT.Split("|")[10]);
+                        EnumTypeEmployee type = (EnumTypeEmployee)Convert.ToInt32(lineTXT.Split("|")[11]);
+                        DateTime Added = Convert.ToDateTime(lineTXT.Split("|")[12]);
+                        long AddedBy = Convert.ToInt64(lineTXT.Split("|")[13]);
+                        DateTime Updated = Convert.ToDateTime(lineTXT.Split("|")[14]);
+                        long UpdatedBy = Convert.ToInt64(lineTXT.Split("|")[15]);
 
-                    var contact = styleSheet2.GetCellValueAsInt64(j, 9);
-                    var birthDate = styleSheet2.GetCellValueAsDateTime(j, 10);
-                    var initWork = styleSheet2.GetCellValueAsDateTime(j, 11);
-                    var salary = styleSheet2.GetCellValueAsDecimal(j, 12);
-                    var Added = styleSheet2.GetCellValueAsDateTime(j, 13);
-                    var AddedBy = styleSheet2.GetCellValueAsInt64(j, 14);
-                    var Updated = styleSheet2.GetCellValueAsDateTime(j, 15);
-                    var UpdatedBy = styleSheet2.GetCellValueAsInt64(j, 16);
-
-
-                    Employee user = new Employee(id, email, authHash, lastDateLogin, type, firstName, lastName, address, contact, birthDate, initWork, salary, Added, AddedBy, Updated, UpdatedBy);
-
-                    this.listUsers.Add(user);
+                        listEmployees.Add(new Employee(id, email, authHash, lastDateLogin, type, firstName, lastName, address, contact, birthDate, initWork, salary, Added, AddedBy, Updated, UpdatedBy));
+                    }
                 }
 
-                fs.Close();
-
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
             }
         }
 
-        public Employee FindEmployees(string Login, string Password)
+        public Employee FindEmployeesToEdit(string email)
         {
-            if (!this.listUsers.Any())
+            if (!this.listEmployees.Any())
             {
                 List();
             }
 
-            Employee u = this.listUsers.FirstOrDefault(x => x.email.ToLower() == Login.ToLower());
+            Employee u = this.listEmployees.FirstOrDefault(x => x.email.ToLower() == email.ToLower());
 
             if (u != null)
             {
@@ -133,7 +127,7 @@ namespace work.Data
 
         public Employee FindEmployeesToLogin(string Email, string Password)
         {
-            if (!this.listUsers.Any())
+            if (!this.listEmployees.Any())
             {
                 List();
             }
@@ -141,7 +135,7 @@ namespace work.Data
             if (!string.IsNullOrEmpty(Email) && !string.IsNullOrEmpty(Password))
             {
                 string hash = GetHash(Email.ToLower(), Password);
-                Employee u = this.listUsers.FirstOrDefault(x => x.authHash == hash);
+                Employee u = this.listEmployees.FirstOrDefault(x => x.authHash == hash);
 
                 if (u != null)
                 {
@@ -166,80 +160,91 @@ namespace work.Data
 
             return Sb.ToString();
         }
-        //public bool RemoveUser(string nome)
-        //{
-        //    Users useroToRemove = FindUsers(nome);
+        public bool RemoveUser(string email)
+        {
+            Employee employeeToRemove = FindEmployeesToEdit(email);
 
-        //    if (useroToRemove != null)
-        //    {
-        //        this.listUsers.Remove(useroToRemove);
-        //        CleanFile();
-        //        foreach (var item in this.listUsers)
-        //        {
-        //            SaveToTxt(item);
-        //        }
-        //        return true;
-        //    }
+            if (employeeToRemove != null)
+            {
+                this.listEmployees.Remove(employeeToRemove);
+                CleanFile();
+                foreach (var item in this.listEmployees)
+                {
+                    SaveToTxt(item);
+                }
+                return true;
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
-        //public Contacto EditContact(string nome, string novoNome, string novoTelefone, string novaMorada)
-        //{
-        //    Contacto contactoAEditar = FindContact(nome);
+        public Employee EditEmployee(string email, int type, string firstName, string lastName, string address, long contact, decimal salary, long userId)
+        {
+            Employee employeeToEdit = FindEmployeesToEdit(email);
 
-        //    if (RemoveFromContacs(nome))
-        //    {
-        //        if (contactoAEditar != null)
-        //        {
-        //            if (!string.IsNullOrEmpty(novoNome))
-        //            {
-        //                contactoAEditar.nome = novoNome;
-        //            }
-        //            if (!string.IsNullOrEmpty(novoTelefone))
-        //            {
-        //                contactoAEditar.numeroDeTelefone = novoTelefone;
-        //            }
-        //            if (!string.IsNullOrEmpty(novaMorada))
-        //            {
-        //                contactoAEditar.morada = novaMorada;
-        //            }
-        //            SaveToTxt(contactoAEditar);
-        //            List();
-        //            return contactoAEditar;
-        //        }
-        //    }
-        //    return null;
-        //}
+            if (employeeToEdit != null)
+            {
+                if (removeFromEmployees(employeeToEdit.id))
+                {
+                    SaveToTxt(employeeToEdit);
+                    List();
+                    return employeeToEdit;
+                }
+            }
+            return null;
+        }
 
         public Employee AddEmployee(string email, int type, string firstName, string lastName, string address, long contact, DateTime birthDate, DateTime initWork, decimal salary, string passWord, long userId)
         {
-            Employee e = new Employee(email, type, firstName, lastName, address, contact, birthDate, initWork, salary, passWord, userId);
-            this.listUsers.Add(e);
-            FileStream fs = new FileStream(Path, FileMode.Open);
-
-            MemoryStream ms = new MemoryStream();
-            using (SLDocument sl = new SLDocument(fs))
+            try
             {
-                sl.SetCellValue("B3", "I love ASP.NET MVC");
-                sl.SetCellValue("C3", "I love ASP.NET MVC");
-                sl.SetCellValue("D3", "I love ASP.NET MVC");
+                Employee e = new Employee(email, (EnumTypeEmployee)type, firstName, lastName, address, contact, birthDate, initWork, salary, passWord, userId);
 
-                sl.SaveAs(ms);
+                SaveToTxt(e);
+
+                return e;
             }
-            // this is important. Otherwise you get an empty file
-            // (because you'd be at EOF after the stream is written to, I think...).
-            ms.Position = 0;
-            return e;
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
         }
 
-        //public void SaveToTxt(Users item)
-        //{
-        //    using (TextWriter tw = new StreamWriter(Path, over))
-        //    {
-        //        //tw.WriteLine(string.Format($"{item.nome} | {item.morada} | {item.numeroDeTelefone}"));
-        //    }
-        //}
+        public bool removeFromEmployees(long Id)
+        {
+            Employee contactoToRemove = this.listEmployees.Where(x => x.id == Id).FirstOrDefault();
+
+            if (contactoToRemove != null)
+            {
+                this.listEmployees.Remove(contactoToRemove);
+                CleanFile();
+                foreach (var item in this.listEmployees)
+                {
+                    SaveToTxt(item);
+                }
+                return true;
+            }
+
+            return false;
+        }
+        public void CleanFile()
+        {
+            using (TextWriter tw = new StreamWriter(Path))
+            {
+                tw.Write("");
+            }
+        }
+        public void SaveToTxt(Employee e)
+        {
+
+            using (TextWriter StreamWriter = new StreamWriter(Path, true))
+            {
+                StreamWriter.WriteLine(e.id + "|" + e.firstName + "|" + e.lastName + "|" + e.address + "|" + e.contact + "|" + e.birthDate + "|" + e.initWork + "|" + e.salary + "|" + e.email + "|" + e.authHash + "|" + e.lastDateLogin + "|"
+                    + (int)e.type + "|" + e.Added + "|" + e.AddedBy + "|" + e.Updated + "|" + e.UpdatedBy + "\n");
+            }
+        }
         #endregion
 
     }
